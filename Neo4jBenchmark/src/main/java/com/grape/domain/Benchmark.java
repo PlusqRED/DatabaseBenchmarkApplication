@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class Benchmark {
-    private String name;
+    private String hostName;
+    private Integer port;
     private List<String> benchmarkEndpoints;
 }

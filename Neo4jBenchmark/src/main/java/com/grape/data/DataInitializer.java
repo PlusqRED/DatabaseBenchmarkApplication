@@ -21,6 +21,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         postRepository.deleteAll();
+        friendRepository.deleteAll();
+        likeRepository.deleteAll();
         Friend friend = Friend.builder().name("Oleg").surname("Vinograd").age(20).build();
         Post post = Post.builder().title("title").content("content").build();
         Like like = Like.builder().friend(friend).post(post).build();

@@ -4,6 +4,7 @@ import com.grape.domain.Benchmark;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,18 +19,24 @@ public class BenchmarkRegistryService implements CommandLineRunner {
     @Value("${benchmarkService.registry.name}")
     private String benchmarkServiceRegistryName;
 
+    @Value("${benchmarkService.registry.port}")
+    private Integer benchmarkServiceRegistryPort;
+
     @Value("${spring.application.name}")
     private String applicationName;
+
+    @Value("${server.port}")
+    private Integer serverPort;
 
     @Override
     public void run(String... args) throws Exception {
         Benchmark benchmark = Benchmark.builder()
-                .name(applicationName)
+                .hostName(applicationName)
+                .port(serverPort)
                 .benchmarkEndpoints(List.of("/likes", "/friends"))
                 .build();
         restTemplate.postForEntity(
-                String.format("http://%s/register", benchmarkServiceRegistryName),
-//                "http://localhost:8989/register",
+                String.format("http://%s:%d/register", benchmarkServiceRegistryName, benchmarkServiceRegistryPort),
                 benchmark,
                 String.class
         );

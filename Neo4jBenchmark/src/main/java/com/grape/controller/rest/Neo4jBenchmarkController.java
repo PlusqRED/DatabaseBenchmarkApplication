@@ -22,13 +22,17 @@ public class Neo4jBenchmarkController {
     @Value("${spring.application.name}")
     private String applicationName;
 
+    @Value("${server.port}")
+    private Integer serverPort;
+
     @GetMapping("/likes")
     public ResponseEntity<String> getAllLikes() {
         long start = System.currentTimeMillis();
         Iterable<Like> likes = likeRepository.findAll();
         double resultSeconds = (System.currentTimeMillis() - start) / 1000d;
-        return ResponseEntity.ok(String.format("Execution time {%s}: %.5f s [size: %d]",
+        return ResponseEntity.ok(String.format("Execution time {%s:%d} Endpoint [/likes]: %.5f s [size: %d]",
                 applicationName,
+                serverPort,
                 resultSeconds,
                 (int) StreamSupport.stream(likes.spliterator(), false).count()
         ));
@@ -39,8 +43,9 @@ public class Neo4jBenchmarkController {
         long start = System.currentTimeMillis();
         Iterable<Friend> friends = friendRepository.findAll();
         double resultSeconds = (System.currentTimeMillis() - start) / 1000d;
-        return ResponseEntity.ok(String.format("Execution time {%s} Endpoint [/friends]: %.5f s [size: %d]",
+        return ResponseEntity.ok(String.format("Execution time {%s:%d} Endpoint [/friends]: %.5f s [size: %d]",
                 applicationName,
+                serverPort,
                 resultSeconds,
                 (int) StreamSupport.stream(friends.spliterator(), false).count()
         ));

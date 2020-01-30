@@ -1,6 +1,5 @@
 package com.grape.controller.rest;
 
-import com.google.gson.Gson;
 import com.grape.domain.Friend;
 import com.grape.domain.Post;
 import com.grape.repository.FriendRepository;
@@ -19,18 +18,21 @@ import static java.util.stream.Collectors.toList;
 public class MongoDbBenchmarkController {
 
     private final FriendRepository friendRepository;
-    private final Gson gson;
 
     @Value("${spring.application.name}")
     private String applicationName;
+
+    @Value("${server.port}")
+    private Integer serverPort;
 
     @GetMapping("/likes")
     public ResponseEntity<String> getAllLikes() {
         long start = System.currentTimeMillis();
         List<Friend> friends = friendRepository.findAll();
         double resultSeconds = (System.currentTimeMillis() - start) / 1000d;
-        return ResponseEntity.ok(String.format("Execution time {%s} Endpoint [/likes]: %.5f s [size: %d]",
+        return ResponseEntity.ok(String.format("Execution time {%s:%d} Endpoint [/likes]: %.5f s [size: %d]",
                 applicationName,
+                serverPort,
                 resultSeconds,
                 friends.size()
         ));
@@ -42,8 +44,9 @@ public class MongoDbBenchmarkController {
         List<Friend> friends = friendRepository.findAll();
         List<Post> likedPosts = friends.stream().flatMap(friend -> friend.getLikedPosts().stream()).collect(toList());
         double resultSeconds = (System.currentTimeMillis() - start) / 1000d;
-        return ResponseEntity.ok(String.format("Execution time {%s} Endpoint [/friends]: %.5f s [size: %d]",
+        return ResponseEntity.ok(String.format("Execution time {%s:%d} Endpoint [/friends]: %.5f s [size: %d]",
                 applicationName,
+                serverPort,
                 resultSeconds,
                 likedPosts.size()
         ));

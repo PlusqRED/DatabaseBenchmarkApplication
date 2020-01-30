@@ -23,7 +23,7 @@ public class BenchmarkServiceController {
     private final RestTemplate restTemplate;
     private final BenchmarkPool benchmarkPool;
 
-    private static final String ENDPOINT_FORMAT = "http://%s%s";
+    private static final String ENDPOINT_FORMAT = "http://%s:%d%s";
 
     @GetMapping("/benchmark")
     public ResponseEntity<BenchmarkResult> benchmark() {
@@ -40,7 +40,9 @@ public class BenchmarkServiceController {
 
     @PostMapping(value = "/register")
     public ResponseEntity<String> registerBenchmark(@RequestBody Benchmark benchmark) {
-        benchmarkPool.getBenchmarkList().put(benchmark.getName(), benchmark);
+        String hostNameAndPort = benchmark.getHostName()
+                .concat(benchmark.getPort().toString());
+        benchmarkPool.getBenchmarkList().put(hostNameAndPort, benchmark);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Successfully registered!");
     }
@@ -50,6 +52,6 @@ public class BenchmarkServiceController {
     }
 
     private String getFormattedEndpoint(Benchmark benchmark, String endpoint) {
-        return String.format(ENDPOINT_FORMAT, benchmark.getName(), endpoint);
+        return String.format(ENDPOINT_FORMAT, benchmark.getHostName(), benchmark.getPort(), endpoint);
     }
 }

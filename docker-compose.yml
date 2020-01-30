@@ -1,5 +1,81 @@
-version: '3'
-
-networks:
-  backend:
-    driver: "bridge"
+version: "3.3"
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=benchmark
+      - POSTGRES_USER=benchmark
+      - POSTGRES_DB=benchmark
+    restart: on-failure
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_DATABASE=benchmark
+      - MONGO_INITDB_ROOT_USERNAME=benchmark
+      - MONGO_INITDB_ROOT_PASSWORD=benchmark
+    restart: on-failure
+    volumes:
+      - ./MongoDbBenchmark/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: on-failure
+  # --------------- SERVICES  ---------------
+  benchmarkservice:
+    build:
+      context: BenchmarkService
+    container_name: benchmarkservice
+    ports:
+      - 8989:8989
+    environment:
+      - SERVER_PORT=8989
+      - SPRING_APPLICATION_NAME=benchmarkservice
+    restart: always
+  neo4jbenchmark:
+    build:
+      context: Neo4jBenchmark
+    container_name: neo4jbenchmark
+    environment:
+      - BENCHMARKSERVICE_REGISTRY_NAME=benchmarkservice
+      - BENCHMARKSERVICE_REGISTRY_PORT=8989
+      - SPRING_APPLICATION_NAME=neo4jbenchmark
+      - SERVER_PORT=8881
+    restart: always
+    depends_on:
+      - benchmarkservice
+      - neo4j
+  postgresqlbenchmark:
+    build:
+      context: PostgreSqlBenchmark
+    container_name: postgresqlbenchmark
+    environment:
+      - BENCHMARKSERVICE_REGISTRY_NAME=benchmarkservice
+      - BENCHMARKSERVICE_REGISTRY_PORT=8989
+      - SPRING_APPLICATION_NAME=postgresqlbenchmark
+      - SERVER_PORT=8882
+    restart: always
+    depends_on:
+      - benchmarkservice
+      - postgres
+  mongodbbenchmark:
+    build:
+      context: MongoDbBenchmark
+    container_name: mongodbbenchmark
+    environment:
+      - BENCHMARKSERVICE_REGISTRY_NAME=benchmarkservice
+      - BENCHMARKSERVICE_REGISTRY_PORT=8989
+      - SPRING_APPLICATION_NAME=mongodbbenchmark
+      - SERVER_PORT=8883
+    restart: always
+    depends_on:
+      - benchmarkservice
+      - mongodb
