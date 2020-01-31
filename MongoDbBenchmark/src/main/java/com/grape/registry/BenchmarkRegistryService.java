@@ -35,7 +35,7 @@ public class BenchmarkRegistryService implements CommandLineRunner {
                 .benchmarkEndpoints(List.of("/likes", "/friends"))
                 .build();
         restTemplate.postForEntity(
-                String.format("http://%s:%d/register", benchmarkServiceRegistryName, benchmarkServiceRegistryPort),
+                String.format("http://%s:%d/benchmarks/register", benchmarkServiceRegistryName, benchmarkServiceRegistryPort),
                 benchmark,
                 String.class
         );

@@ -3,6 +3,8 @@ package com.grape.controller.rest;
 import com.grape.domain.Friend;
 import com.grape.domain.PostLike;
 import com.grape.domain.benchmark.BenchmarkResult;
+import com.grape.domain.benchmark.Errors;
+import com.grape.domain.benchmark.Indicators;
 import com.grape.repository.FriendRepository;
 import com.grape.repository.PostLikeRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +53,11 @@ public class PostgreSqlBenchmarkController {
                 .hostName(applicationName)
                 .endpointName(endpointName)
                 .port(serverPort)
-                .querySize((long) size)
-                .timeInSec(resultSeconds)
+                .indicators(Indicators.builder()
+                        .timeInSec(resultSeconds)
+                        .querySize((long) size)
+                        .build())
+                .errors(Errors.builder().hasErrors(false).build())
                 .build());
     }
 }

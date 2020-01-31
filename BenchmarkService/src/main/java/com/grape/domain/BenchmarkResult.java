@@ -15,6 +15,6 @@ public class BenchmarkResult {
     private String hostName;
     private Integer port;
     private String endpointName;
-    private Double timeInSec;
-    private Long querySize;
+    private Indicators indicators;
+    private Errors errors;
 }

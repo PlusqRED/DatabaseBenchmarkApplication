@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BenchmarkResult {
-    private String hostName;
-    private Integer port;
-    private String endpointName;
-    private Indicators indicators;
-    private Errors errors;
+public class Indicators {
+    private Double timeInSec;
+    private Long querySize;
 }

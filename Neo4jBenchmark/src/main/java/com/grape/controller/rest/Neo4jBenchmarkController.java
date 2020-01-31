@@ -3,6 +3,8 @@ package com.grape.controller.rest;
 import com.grape.domain.Friend;
 import com.grape.domain.Like;
 import com.grape.domain.benchmark.BenchmarkResult;
+import com.grape.domain.benchmark.Errors;
+import com.grape.domain.benchmark.Indicators;
 import com.grape.repository.FriendRepository;
 import com.grape.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +52,11 @@ public class Neo4jBenchmarkController {
                 .hostName(applicationName)
                 .endpointName(endpointName)
                 .port(serverPort)
-                .querySize(StreamSupport.stream(likes.spliterator(), false).count())
-                .timeInSec(resultSeconds)
+                .indicators(Indicators.builder()
+                        .querySize(StreamSupport.stream(likes.spliterator(), false).count())
+                        .timeInSec(resultSeconds)
+                        .build())
+                .errors(Errors.builder().hasErrors(false).build())
                 .build());
     }
 }
