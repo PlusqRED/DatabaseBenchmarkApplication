@@ -49,6 +49,7 @@ services:
       - BENCHMARKSERVICE_REGISTRY_PORT=8989
       - SPRING_APPLICATION_NAME=neo4jbenchmark
       - SERVER_PORT=8881
+      - DUMMY_DATA_SIZE=2000
     restart: always
     depends_on:
       - benchmarkservice
@@ -62,6 +63,7 @@ services:
       - BENCHMARKSERVICE_REGISTRY_PORT=8989
       - SPRING_APPLICATION_NAME=postgresqlbenchmark
       - SERVER_PORT=8882
+      - DUMMY_DATA_SIZE=2000
     restart: always
     depends_on:
       - benchmarkservice
@@ -75,6 +77,7 @@ services:
       - BENCHMARKSERVICE_REGISTRY_PORT=8989
       - SPRING_APPLICATION_NAME=mongodbbenchmark
       - SERVER_PORT=8883
+      - DUMMY_DATA_SIZE=2000
     restart: always
     depends_on:
       - benchmarkservice

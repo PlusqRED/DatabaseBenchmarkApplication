@@ -1,5 +1,6 @@
 package com.grape.controller.rest;
 
+import com.grape.domain.AggregatedBenchmarkResult;
 import com.grape.domain.Benchmark;
 import com.grape.domain.BenchmarkPool;
 import com.grape.domain.BenchmarkResult;
@@ -12,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import javax.websocket.server.PathParam;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -20,22 +24,47 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class BenchmarkServiceController {
 
+    private static final String ENDPOINT_FORMAT = "http://%s:%d%s";
     private final RestTemplate restTemplate;
     private final BenchmarkPool benchmarkPool;
 
-    private static final String ENDPOINT_FORMAT = "http://%s:%d%s";
-
     @GetMapping("/benchmark")
-    public ResponseEntity<BenchmarkResult> benchmark() {
+    public ResponseEntity<List<?>> benchmark(@PathParam(value = "iterations") Long iterations) {
         List<String> benchmarksEndpoints = benchmarkPool.getBenchmarkList().entrySet().stream()
                 .flatMap(benchmark -> benchmark.getValue().getBenchmarkEndpoints().stream()
-                        .map(endpoint -> getFormattedEndpoint(benchmark.getValue(), endpoint)))
+                        .map(endpoint -> getFormattedUrl(benchmark.getValue(), endpoint)))
                 .collect(toList());
-        return ResponseEntity.ok(
-                BenchmarkResult.builder()
-                        .benchmarks(benchmarksEndpoints.parallelStream().map(this::callForEntityBody).collect(toList()))
-                        .build()
-        );
+
+        if (iterations == null) {
+            List<BenchmarkResult> benchmarkResults = benchmarksEndpoints.parallelStream()
+                    .map(this::callForEntityBody)
+                    .collect(toList());
+            return ResponseEntity.ok(benchmarkResults);
+        }
+
+        List<AggregatedBenchmarkResult> aggregatedBenchmarkResults =
+                benchmarkPool.getBenchmarkList().values().parallelStream()
+                        .flatMap(benchmark -> collectAggregatedBenchmarkResults(iterations, benchmark))
+                        .collect(Collectors.toUnmodifiableList());
+        return ResponseEntity.ok(aggregatedBenchmarkResults);
+    }
+
+    private Stream<AggregatedBenchmarkResult> collectAggregatedBenchmarkResults(Long iterations, Benchmark benchmark) {
+        return benchmark.getBenchmarkEndpoints().stream()
+                .map(benchmarkEndpoint -> performIterations(iterations, benchmark, benchmarkEndpoint));
+    }
+
+    private AggregatedBenchmarkResult performIterations(Long iterations, Benchmark benchmark, String benchmarkEndpoint) {
+        AggregatedBenchmarkResult aBenchmarkResult = AggregatedBenchmarkResult.builder()
+                .iterations(iterations)
+                .build();
+        for (int i = 0; i < iterations; ++i) {
+            BenchmarkResult benchmarkResult = callForEntityBody(getFormattedUrl(benchmark, benchmarkEndpoint));
+            aBenchmarkResult.setTotalTime(aBenchmarkResult.getTotalTime() + benchmarkResult.getTimeInSec());
+            aBenchmarkResult.setLastBenchmarkResult(benchmarkResult);
+        }
+        aBenchmarkResult.setAverageTime(aBenchmarkResult.getTotalTime() / aBenchmarkResult.getIterations());
+        return aBenchmarkResult;
     }
 
     @PostMapping(value = "/register")
@@ -47,11 +76,11 @@ public class BenchmarkServiceController {
                 .body("Successfully registered!");
     }
 
-    private String callForEntityBody(String endpoint) {
-        return restTemplate.getForEntity(endpoint, String.class).getBody();
+    private BenchmarkResult callForEntityBody(String url) {
+        return restTemplate.getForEntity(url, BenchmarkResult.class).getBody();
     }
 
-    private String getFormattedEndpoint(Benchmark benchmark, String endpoint) {
+    private String getFormattedUrl(Benchmark benchmark, String endpoint) {
         return String.format(ENDPOINT_FORMAT, benchmark.getHostName(), benchmark.getPort(), endpoint);
     }
 }

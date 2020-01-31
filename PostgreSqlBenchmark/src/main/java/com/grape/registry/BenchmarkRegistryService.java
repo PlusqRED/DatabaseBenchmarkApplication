@@ -1,10 +1,9 @@
 package com.grape.registry;
 
-import com.grape.domain.Benchmark;
+import com.grape.domain.benchmark.Benchmark;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,7 +28,7 @@ public class BenchmarkRegistryService implements CommandLineRunner {
     private Integer serverPort;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         Benchmark benchmark = Benchmark.builder()
                 .hostName(applicationName)
                 .port(serverPort)

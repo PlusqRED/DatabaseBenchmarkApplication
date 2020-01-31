@@ -1,10 +1,10 @@
 package com.grape.data;
 
 import com.grape.domain.Friend;
-import com.grape.domain.Like;
 import com.grape.domain.Post;
+import com.grape.domain.PostLike;
 import com.grape.repository.FriendRepository;
-import com.grape.repository.LikeRepository;
+import com.grape.repository.PostLikeRepository;
 import com.grape.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,34 +17,33 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private final PostRepository postRepository;
     private final FriendRepository friendRepository;
-    private final LikeRepository likeRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final PostRepository postRepository;
 
     @Value("${dummy.data.size}")
     private Long dummyDataSize;
 
     @Override
     public void run(String... args) {
-        postRepository.deleteAll();
+        postLikeRepository.deleteAll();
         friendRepository.deleteAll();
-        likeRepository.deleteAll();
+        postRepository.deleteAll();
         for(int i = 0; i < dummyDataSize; ++i) {
-            Friend friend = friendRepository.save(Friend.builder()
+            Friend friend = Friend.builder()
                     .name("name" + i)
                     .surname("surname" + i)
-                    .age(i)
-                    .build());
-            Post post = postRepository.save(Post.builder()
+                    .age(i).build();
+            Post post = Post.builder()
                     .title("title" + i)
                     .content("content" + i)
                     .creationDate(LocalDate.now())
-                    .build());
-            Like like = Like.builder()
+                    .build();
+            postLikeRepository.save(PostLike.builder()
                     .friend(friend)
                     .post(post)
-                    .build();
-            likeRepository.save(like);
+                    .localDate(LocalDate.now())
+                    .build());
         }
     }
 }

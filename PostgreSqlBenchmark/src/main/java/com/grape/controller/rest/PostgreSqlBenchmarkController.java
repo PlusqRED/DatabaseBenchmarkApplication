@@ -2,6 +2,7 @@ package com.grape.controller.rest;
 
 import com.grape.domain.Friend;
 import com.grape.domain.PostLike;
+import com.grape.domain.benchmark.BenchmarkResult;
 import com.grape.repository.FriendRepository;
 import com.grape.repository.PostLikeRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,27 +27,32 @@ public class PostgreSqlBenchmarkController {
     @Value("${server.port}")
     private Integer serverPort;
 
-    @GetMapping("/likes")
-    public ResponseEntity<String> getAllLikes() {
+    private static final String LIKES_ENDPOINT = "/likes";
+    private static final String FRIENDS_ENDPOINT = "/friends";
+
+    @GetMapping(LIKES_ENDPOINT)
+    public ResponseEntity<BenchmarkResult> getAllLikes() {
         long start = System.currentTimeMillis();
         List<PostLike> postLikes = postLikeRepository.findAll();
-        return ResponseEntity.ok(String.format("Execution time {%s:%d} Endpoint [/likes] : %.5f s [size: %d]",
-                applicationName,
-                serverPort,
-                (System.currentTimeMillis() - start) / 1000d,
-                postLikes.size())
-        );
+        double resultSeconds = (System.currentTimeMillis() - start) / 1000d;
+        return getBenchmarkResultResponseEntity(resultSeconds, LIKES_ENDPOINT, postLikes.size());
     }
 
-    @GetMapping("/friends")
-    public ResponseEntity<String> getAllFriends() {
+    @GetMapping(FRIENDS_ENDPOINT)
+    public ResponseEntity<BenchmarkResult> getAllFriends() {
         long start = System.currentTimeMillis();
         List<Friend> friends = friendRepository.findAll();
-        return ResponseEntity.ok(String.format("Execution time {%s:%d} Endpoint [/friends]: %.5f s [size: %d]",
-                applicationName,
-                serverPort,
-                (System.currentTimeMillis() - start) / 1000d,
-                friends.size())
-        );
+        double resultSeconds = (System.currentTimeMillis() - start) / 1000d;
+        return getBenchmarkResultResponseEntity(resultSeconds, FRIENDS_ENDPOINT, friends.size());
+    }
+
+    private ResponseEntity<BenchmarkResult> getBenchmarkResultResponseEntity(double resultSeconds, String endpointName, int size) {
+        return ResponseEntity.ok(BenchmarkResult.builder()
+                .hostName(applicationName)
+                .endpointName(endpointName)
+                .port(serverPort)
+                .querySize((long) size)
+                .timeInSec(resultSeconds)
+                .build());
     }
 }

@@ -12,7 +12,7 @@ public class BenchmarkInfoContributor implements InfoContributor {
 
     @Override
     public void contribute(Info.Builder builder) {
-        Map<String,String> data= new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("benchmark.postgresql.version", "0.0.1");
         data.put("description", "supply several endpoints to be executed by benchmark service");
         builder.withDetail("buildInfo", data);

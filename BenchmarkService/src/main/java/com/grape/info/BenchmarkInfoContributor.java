@@ -12,7 +12,7 @@ public class BenchmarkInfoContributor implements InfoContributor {
 
     @Override
     public void contribute(Info.Builder builder) {
-        Map<String,String> data= new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("benchmark.service.version", "0.0.1");
         data.put("description", "Executes http requests and aggregates information as report");
         builder.withDetail("buildInfo", data);

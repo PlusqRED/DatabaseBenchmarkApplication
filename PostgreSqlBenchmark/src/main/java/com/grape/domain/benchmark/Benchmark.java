@@ -1,4 +1,4 @@
-package com.grape.domain;
+package com.grape.domain.benchmark;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,10 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BenchmarkResult {
+public class Benchmark {
     private String hostName;
     private Integer port;
-    private String endpointName;
-    private Double timeInSec;
-    private Long querySize;
+    private List<String> benchmarkEndpoints;
 }
