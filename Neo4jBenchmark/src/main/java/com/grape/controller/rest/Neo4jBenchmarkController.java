@@ -19,17 +19,14 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class Neo4jBenchmarkController {
 
-    private final LikeRepository likeRepository;
-    private final FriendRepository friendRepository;
-
-    @Value("${spring.application.name}")
-    private String applicationName;
-
-    @Value("${server.port}")
-    private Integer serverPort;
-
     private static final String LIKES_ENDPOINT = "/likes";
     private static final String FRIENDS_ENDPOINT = "/friends";
+    private final LikeRepository likeRepository;
+    private final FriendRepository friendRepository;
+    @Value("${spring.application.name}")
+    private String applicationName;
+    @Value("${server.port}")
+    private Integer serverPort;
 
     @GetMapping(LIKES_ENDPOINT)
     public ResponseEntity<BenchmarkResult> getAllLikes() {

@@ -14,23 +14,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequiredArgsConstructor
 public class PostgreSqlBenchmarkController {
 
-    private final PostLikeRepository postLikeRepository;
-    private final FriendRepository friendRepository;
-
-    @Value("${spring.application.name}")
-    private String applicationName;
-
-    @Value("${server.port}")
-    private Integer serverPort;
-
     private static final String LIKES_ENDPOINT = "/likes";
     private static final String FRIENDS_ENDPOINT = "/friends";
+    private final PostLikeRepository postLikeRepository;
+    private final FriendRepository friendRepository;
+    @Value("${spring.application.name}")
+    private String applicationName;
+    @Value("${server.port}")
+    private Integer serverPort;
 
     @GetMapping(LIKES_ENDPOINT)
     public ResponseEntity<BenchmarkResult> getAllLikes() {

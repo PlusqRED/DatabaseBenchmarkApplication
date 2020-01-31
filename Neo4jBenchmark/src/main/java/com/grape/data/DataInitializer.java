@@ -29,7 +29,7 @@ public class DataInitializer implements CommandLineRunner {
         postRepository.deleteAll();
         friendRepository.deleteAll();
         likeRepository.deleteAll();
-        for(int i = 0; i < dummyDataSize; ++i) {
+        for (int i = 0; i < dummyDataSize; ++i) {
             Friend friend = friendRepository.save(Friend.builder()
                     .name("name" + i)
                     .surname("surname" + i)
