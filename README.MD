@@ -46,14 +46,22 @@ Every service needs to have a class that will register itself in BenchmarkServic
                 String.class
         );
 ```
+JSON form of Benchmark for registration:
+```
+{
+  hostName: 'host',
+  port: {integer}
+  benchmarkEndpoints: ['/example', '/another']
+}
+```
 Benchmarkservice expects a response from each service in the following **JSON** format:  
 
 **Example:**
 ```
 {
       "hostName": "{host_or_hostName_if_deployed_in_same_network}",
-      "port": 8883,
-      "endpointName": "/friends",
+      "port": {your_service_port},
+      "endpointName": "/example",
       "indicators": {
         "timeInSec": 0.025,
         "querySize": 2000
