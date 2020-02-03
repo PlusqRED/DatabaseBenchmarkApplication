@@ -96,6 +96,10 @@ Then you can run everything without rebuilding
 sudo docker-compose up
 ```
 
+## Possible improvements
+
+* Use *Maven* Spring-boot starter dependency and minimal configuration to automaticly register into BenchmarkService by scanning REST endpoints like Swagger does it.
+
 ## Other
 
 * [Swagger UI](https://swagger.io/) - http://localhost:8989/swagger-ui.html
