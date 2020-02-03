@@ -99,6 +99,7 @@ sudo docker-compose up
 ## Possible improvements
 
 * Use *Maven* Spring-boot starter dependency and minimal configuration to automaticly register into BenchmarkService by scanning REST endpoints like Swagger does it.
+* Customize with Web UI
 
 ## Other
 
