@@ -69,7 +69,7 @@ public class RestBenchmarkController implements BenchmarkController {
                 .collect(toList());
 
         if (iterations == null) {
-            Map<String, List<BenchmarkResult>> results = benchmarkUrls.parallelStream()
+            Map<String, List<BenchmarkResult>> results = benchmarkUrls.stream()
                     .map(benchmarkFacade::callForEntityBody)
                     .collect(groupingBy(BenchmarkResult::getHostName));
             return ResponseEntity.ok(results);
