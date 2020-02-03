@@ -6,6 +6,7 @@ import com.grape.domain.Benchmark;
 import com.grape.domain.BenchmarkPool;
 import com.grape.domain.BenchmarkResult;
 import com.grape.facade.BenchmarkFacade;
+import com.grape.service.ConnectionSupervisor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.websocket.server.PathParam;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 
 @RequiredArgsConstructor
 @RestController
@@ -32,14 +31,9 @@ public class RestBenchmarkController implements BenchmarkController {
 
     @Override
     public ResponseEntity<Map<String, ?>> benchmarkAll(@PathParam(value = "iterations") Long iterations) {
-        List<String> benchmarkUrls = benchmarkPool.getBenchmarkList().entrySet().stream()
-                .flatMap(benchmark -> benchmark.getValue().getBenchmarkEndpoints().stream()
-                        .map(endpoint -> benchmarkFacade.getFormattedUrl(benchmark.getValue(), endpoint)))
-                .collect(toList());
-
         if (iterations == null) {
-            Map<String, List<BenchmarkResult>> results = benchmarkUrls.parallelStream()
-                    .map(benchmarkFacade::callForEntityBody)
+            Map<String, List<BenchmarkResult>> results = benchmarkPool.getBenchmarkList().values().parallelStream()
+                    .flatMap(benchmarkFacade::collectBenchmarkResults)
                     .collect(groupingBy(BenchmarkResult::getHostName));
             return ResponseEntity.ok(results);
         }
@@ -61,13 +55,8 @@ public class RestBenchmarkController implements BenchmarkController {
                 .orElseThrow(() -> new IllegalArgumentException("Service not found!"))
                 .getValue();
 
-        List<String> benchmarkUrls = searchedBenchmark.getBenchmarkEndpoints().stream()
-                .map(endpoint -> benchmarkFacade.getFormattedUrl(searchedBenchmark, endpoint))
-                .collect(toList());
-
         if (iterations == null) {
-            Map<String, List<BenchmarkResult>> results = benchmarkUrls.stream()
-                    .map(benchmarkFacade::callForEntityBody)
+            Map<String, List<BenchmarkResult>> results = benchmarkFacade.collectBenchmarkResults(searchedBenchmark)
                     .collect(groupingBy(BenchmarkResult::getHostName));
             return ResponseEntity.ok(results);
         }

@@ -4,6 +4,7 @@ import com.grape.domain.AggregatedBenchmarkResult;
 import com.grape.domain.Benchmark;
 import com.grape.domain.BenchmarkResult;
 import com.grape.facade.BenchmarkFacade;
+import com.grape.service.ConnectionSupervisor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,11 +17,32 @@ public class DefaultBenchmarkFacade implements BenchmarkFacade {
 
     private static final String ENDPOINT_FORMAT = "http://%s:%d%s";
     private final RestTemplate restTemplate;
+    private final ConnectionSupervisor singleConnectionSupervisor;
 
     @Override
     public Stream<AggregatedBenchmarkResult> collectAggregatedBenchmarkResults(Long iterations, Benchmark benchmark) {
-        return benchmark.getBenchmarkEndpoints().stream()
-                .map(benchmarkEndpoint -> performIterations(iterations, benchmark, benchmarkEndpoint));
+        if(singleConnectionSupervisor.approveBenchmarking(benchmark)) {
+            Stream<AggregatedBenchmarkResult> aggregatedBenchmarkResultStream = benchmark.getBenchmarkEndpoints().stream()
+                    .map(benchmarkEndpoint -> performIterations(iterations, benchmark, benchmarkEndpoint));
+            singleConnectionSupervisor.endBenchmarking(benchmark);
+            return aggregatedBenchmarkResultStream;
+        }
+        return Stream.empty();
+    }
+
+    @Override
+    public Stream<BenchmarkResult> collectBenchmarkResults(Benchmark benchmark) {
+        if (singleConnectionSupervisor.approveBenchmarking(benchmark)) {
+            Stream<BenchmarkResult> benchmarkResultStream = benchmark.getBenchmarkEndpoints().stream()
+                    .map(benchmarkEndpoint -> performIteration(benchmark, benchmarkEndpoint));
+            singleConnectionSupervisor.endBenchmarking(benchmark);
+            return benchmarkResultStream;
+        }
+        return Stream.empty();
+    }
+
+    private BenchmarkResult performIteration(Benchmark benchmark, String benchmarkEndpoint) {
+        return callForEntityBody(getFormattedUrl(benchmark, benchmarkEndpoint));
     }
 
     private AggregatedBenchmarkResult performIterations(Long iterations, Benchmark benchmark, String benchmarkEndpoint) {
@@ -28,7 +50,7 @@ public class DefaultBenchmarkFacade implements BenchmarkFacade {
                 .iterations(iterations)
                 .build();
         for (int i = 0; i < iterations; ++i) {
-            BenchmarkResult benchmarkResult = callForEntityBody(getFormattedUrl(benchmark, benchmarkEndpoint));
+            BenchmarkResult benchmarkResult = performIteration(benchmark, benchmarkEndpoint);
             aBenchmarkResult.setTotalTime(aBenchmarkResult.getTotalTime() + benchmarkResult.getIndicators().getTimeInSec());
             aBenchmarkResult.setLastBenchmarkResult(benchmarkResult);
         }
@@ -36,13 +58,11 @@ public class DefaultBenchmarkFacade implements BenchmarkFacade {
         return aBenchmarkResult;
     }
 
-    @Override
-    public BenchmarkResult callForEntityBody(String url) {
+    private BenchmarkResult callForEntityBody(String url) {
         return restTemplate.getForEntity(url, BenchmarkResult.class).getBody();
     }
 
-    @Override
-    public String getFormattedUrl(Benchmark benchmark, String endpoint) {
+    private String getFormattedUrl(Benchmark benchmark, String endpoint) {
         return String.format(ENDPOINT_FORMAT, benchmark.getHostName(), benchmark.getPort(), endpoint);
     }
 }

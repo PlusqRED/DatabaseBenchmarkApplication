@@ -35,6 +35,7 @@ services:
       context: BenchmarkService
     container_name: benchmarkservice
     ports:
+      - 5005:5005
       - 8989:8989
     environment:
       - SERVER_PORT=8989

@@ -9,7 +9,5 @@ import java.util.stream.Stream;
 public interface BenchmarkFacade {
     Stream<AggregatedBenchmarkResult> collectAggregatedBenchmarkResults(Long iterations, Benchmark benchmark);
 
-    BenchmarkResult callForEntityBody(String url);
-
-    String getFormattedUrl(Benchmark benchmark, String endpoint);
+    Stream<BenchmarkResult> collectBenchmarkResults(Benchmark benchmark);
 }
