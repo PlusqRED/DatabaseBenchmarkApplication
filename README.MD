@@ -41,8 +41,8 @@ Every service needs to have a class that will register itself in BenchmarkServic
                 .benchmarkEndpoints(List.of("/likes", "/friends"))
                 .build();
         restTemplate.postForEntity(
-                String.format("http://%s:%d/benchmarks/register", benchmarkServiceRegistryName, benchmarkServiceRegistryPort),
-                benchmark,
+                String.format("http://%s:%d/benchmarks/register", {benchmarkService_host}, {benchmarkService_port}),
+                {benchmark_json_example_is_below},
                 String.class
         );
 ```
@@ -51,7 +51,7 @@ Benchmarkservice expects a response from each service in the following **JSON** 
 **Example:**
 ```
 {
-      "hostName": "mongodbbenchmark",
+      "hostName": "{host_or_hostName_if_deployed_in_same_network}",
       "port": 8883,
       "endpointName": "/friends",
       "indicators": {
