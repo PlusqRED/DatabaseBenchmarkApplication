@@ -55,15 +55,12 @@ public class RestBenchmarkController implements BenchmarkController {
             @PathVariable("name") String benchmarkHostName,
             @PathParam(value = "iterations") Long iterations
     ) {
-        Optional<Map.Entry<String, Benchmark>> serviceToBenchmark = benchmarkPool.getBenchmarkList().entrySet().stream()
+        Benchmark searchedBenchmark = benchmarkPool.getBenchmarkList().entrySet().stream()
                 .filter(entry -> entry.getValue().getHostName().equalsIgnoreCase(benchmarkHostName))
-                .findAny();
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("Service not found!"))
+                .getValue();
 
-        if (serviceToBenchmark.isEmpty()) {
-            throw new IllegalArgumentException("Service not found!");
-        }
-
-        Benchmark searchedBenchmark = serviceToBenchmark.get().getValue();
         List<String> benchmarkUrls = searchedBenchmark.getBenchmarkEndpoints().stream()
                 .map(endpoint -> benchmarkFacade.getFormattedUrl(searchedBenchmark, endpoint))
                 .collect(toList());
@@ -86,7 +83,8 @@ public class RestBenchmarkController implements BenchmarkController {
         String hostNameAndPort = benchmark.getHostName()
                 .concat(benchmark.getPort().toString());
         benchmarkPool.getBenchmarkList().put(hostNameAndPort, benchmark);
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body("Successfully registered!");
     }
 }
