@@ -34,18 +34,6 @@ public class DefaultBenchmarkResultCollectorService implements BenchmarkResultCo
         return Collections.emptyList();
     }
 
-    @Override
-    public List<BenchmarkResult> collectBenchmarkResults(Benchmark benchmark) {
-        if (singleConnectionSupervisor.approveBenchmarking(benchmark)) {
-            List<BenchmarkResult> benchmarkResults = benchmark.getBenchmarkEndpoints().stream()
-                    .map(benchmarkEndpoint -> performIteration(benchmark, benchmarkEndpoint))
-                    .collect(toList());
-            singleConnectionSupervisor.endBenchmarking(benchmark);
-            return benchmarkResults;
-        }
-        return Collections.emptyList();
-    }
-
     private BenchmarkResult performIteration(Benchmark benchmark, String benchmarkEndpoint) {
         return callForEntityBody(getFormattedUrl(benchmark, benchmarkEndpoint));
     }

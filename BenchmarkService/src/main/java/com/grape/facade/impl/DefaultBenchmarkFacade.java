@@ -3,7 +3,6 @@ package com.grape.facade.impl;
 import com.grape.domain.AggregatedBenchmarkResult;
 import com.grape.domain.Benchmark;
 import com.grape.domain.BenchmarkPool;
-import com.grape.domain.BenchmarkResult;
 import com.grape.facade.BenchmarkFacade;
 import com.grape.service.BenchmarkResultCollectorService;
 import lombok.RequiredArgsConstructor;
@@ -31,25 +30,11 @@ public class DefaultBenchmarkFacade implements BenchmarkFacade {
     }
 
     @Override
-    public Map<String, List<BenchmarkResult>> benchmarkAll() {
-        return benchmarkPool.getBenchmarkList().values().parallelStream()
-                .map(benchmarkResultCollectorService::collectBenchmarkResults)
-                .flatMap(List::stream)
-                .collect(groupingBy(BenchmarkResult::getHostName));
-    }
-
-    @Override
     public Map<String, List<AggregatedBenchmarkResult>> benchmarkAllWithIterations(Long iterations) {
         return benchmarkPool.getBenchmarkList().values().parallelStream()
                 .map(benchmark -> benchmarkResultCollectorService.collectAggregatedBenchmarkResults(iterations, benchmark))
                 .flatMap(List::stream)
                 .collect(groupingBy(e -> e.getLastBenchmarkResult().getHostName()));
-    }
-
-    @Override
-    public Map<String, List<BenchmarkResult>> benchmark(Benchmark benchmark) {
-        return benchmarkResultCollectorService.collectBenchmarkResults(benchmark).stream()
-                .collect(groupingBy(BenchmarkResult::getHostName));
     }
 
     @Override
