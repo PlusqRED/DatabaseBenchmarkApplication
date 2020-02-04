@@ -6,6 +6,7 @@ import com.grape.domain.BenchmarkPool;
 import com.grape.facade.BenchmarkFacade;
 import com.grape.service.BenchmarkResultCollectorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,13 +21,15 @@ public class DefaultBenchmarkFacade implements BenchmarkFacade {
     private final BenchmarkPool benchmarkPool;
     private final BenchmarkResultCollectorService benchmarkResultCollectorService;
 
+    @Value("${benchmark.error.message.notFound}")
+    private String benchmarkErrorMessageNotFound;
+
     @Override
     public Benchmark findBenchmark(String benchmarkHostName) {
-        return benchmarkPool.getBenchmarkList().entrySet().stream()
-                .filter(entry -> entry.getValue().getHostName().equalsIgnoreCase(benchmarkHostName))
+        return benchmarkPool.getBenchmarkList().values().stream()
+                .filter(benchmark -> benchmark.getHostName().equalsIgnoreCase(benchmarkHostName))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Service not found!"))
-                .getValue();
+                .orElseThrow(() -> new IllegalArgumentException(benchmarkErrorMessageNotFound));
     }
 
     @Override
