@@ -36,9 +36,4 @@ public class AppConfig {
                 .paths(PathSelectors.any())
                 .build();
     }
-
-    @Bean
-    public MethodValidationPostProcessor methodValidationPostProcessor() {
-        return new MethodValidationPostProcessor();
-    }
 }
