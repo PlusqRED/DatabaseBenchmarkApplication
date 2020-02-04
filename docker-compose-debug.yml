@@ -35,12 +35,14 @@ services:
       context: BenchmarkService
     container_name: benchmarkservice
     ports:
+      - 5005:5005
       - 8989:8989
     environment:
       - SERVER_PORT=8989
       - SPRING_APPLICATION_NAME=benchmarkservice
       - BENCHMARK_MAX_PARALLEL_CONNECTIONS=1
     restart: always
+    command: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar /app.jar
   neo4jbenchmark:
     build:
       context: Neo4jBenchmark

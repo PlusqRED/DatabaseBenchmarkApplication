@@ -1,12 +1,8 @@
 package com.grape.controller.rest.impl;
 
 import com.grape.controller.rest.BenchmarkController;
-import com.grape.domain.AggregatedBenchmarkResult;
 import com.grape.domain.Benchmark;
-import com.grape.domain.BenchmarkPool;
-import com.grape.domain.BenchmarkResult;
 import com.grape.facade.BenchmarkFacade;
-import com.grape.service.ConnectionSupervisor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,32 +12,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.websocket.server.PathParam;
-import java.util.List;
 import java.util.Map;
-
-import static java.util.stream.Collectors.groupingBy;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/benchmarks")
 public class RestBenchmarkController implements BenchmarkController {
 
-    private final BenchmarkPool benchmarkPool;
     private final BenchmarkFacade benchmarkFacade;
 
     @Override
     public ResponseEntity<Map<String, ?>> benchmarkAll(@PathParam(value = "iterations") Long iterations) {
         if (iterations == null) {
-            Map<String, List<BenchmarkResult>> results = benchmarkPool.getBenchmarkList().values().parallelStream()
-                    .flatMap(benchmarkFacade::collectBenchmarkResults)
-                    .collect(groupingBy(BenchmarkResult::getHostName));
-            return ResponseEntity.ok(results);
+            return ResponseEntity.ok(benchmarkFacade.benchmarkAll());
         }
-
-        Map<String, List<AggregatedBenchmarkResult>> results = benchmarkPool.getBenchmarkList().values().parallelStream()
-                .flatMap(benchmark -> benchmarkFacade.collectAggregatedBenchmarkResults(iterations, benchmark))
-                .collect(groupingBy(e -> e.getLastBenchmarkResult().getHostName()));
-        return ResponseEntity.ok(results);
+        return ResponseEntity.ok(benchmarkFacade.benchmarkAllWithIterations(iterations));
     }
 
     @Override
@@ -49,29 +34,16 @@ public class RestBenchmarkController implements BenchmarkController {
             @PathVariable("name") String benchmarkHostName,
             @PathParam(value = "iterations") Long iterations
     ) {
-        Benchmark searchedBenchmark = benchmarkPool.getBenchmarkList().entrySet().stream()
-                .filter(entry -> entry.getValue().getHostName().equalsIgnoreCase(benchmarkHostName))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Service not found!"))
-                .getValue();
-
+        Benchmark searchedBenchmark = benchmarkFacade.findBenchmark(benchmarkHostName);
         if (iterations == null) {
-            Map<String, List<BenchmarkResult>> results = benchmarkFacade.collectBenchmarkResults(searchedBenchmark)
-                    .collect(groupingBy(BenchmarkResult::getHostName));
-            return ResponseEntity.ok(results);
+            return ResponseEntity.ok(benchmarkFacade.benchmark(searchedBenchmark));
         }
-
-        return ResponseEntity.ok(
-                benchmarkFacade.collectAggregatedBenchmarkResults(iterations, searchedBenchmark)
-                        .collect(groupingBy(e -> e.getLastBenchmarkResult().getHostName()))
-        );
+        return ResponseEntity.ok(benchmarkFacade.benchmarkWithIterations(searchedBenchmark, iterations));
     }
 
     @Override
     public ResponseEntity<String> registerBenchmark(@RequestBody Benchmark benchmark) {
-        String hostNameAndPort = benchmark.getHostName()
-                .concat(benchmark.getPort().toString());
-        benchmarkPool.getBenchmarkList().put(hostNameAndPort, benchmark);
+        benchmarkFacade.registerBenchmark(benchmark);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body("Successfully registered!");

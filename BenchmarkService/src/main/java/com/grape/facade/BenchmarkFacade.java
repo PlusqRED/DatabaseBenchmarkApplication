@@ -4,10 +4,19 @@ import com.grape.domain.AggregatedBenchmarkResult;
 import com.grape.domain.Benchmark;
 import com.grape.domain.BenchmarkResult;
 
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.Map;
 
 public interface BenchmarkFacade {
-    Stream<AggregatedBenchmarkResult> collectAggregatedBenchmarkResults(Long iterations, Benchmark benchmark);
+    Benchmark findBenchmark(String benchmarkHostName);
 
-    Stream<BenchmarkResult> collectBenchmarkResults(Benchmark benchmark);
+    Map<String, List<BenchmarkResult>> benchmarkAll();
+
+    Map<String, List<AggregatedBenchmarkResult>> benchmarkAllWithIterations(Long iterations);
+
+    Map<String, List<BenchmarkResult>> benchmark(Benchmark benchmark);
+
+    Map<String, List<AggregatedBenchmarkResult>> benchmarkWithIterations(Benchmark benchmark, Long iterations);
+
+    void registerBenchmark(Benchmark benchmark);
 }
